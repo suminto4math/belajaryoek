@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belajar Yoek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>
+  :root {
+    --accent: #6C63FF;
+    --accent2: #FF6584;
+    --bg: #0D0D14;
+    --bg2: #13131F;
+    --bg3: #1A1A2E;
+    --card: #16213E;
+    --text: #E8E8F0;
+    --text2: #9898B8;
+    --border: rgba(108,99,255,0.2);
+    --glow: rgba(108,99,255,0.15);
+    --radius: 14px;
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NAVBAR */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(13,13,20,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 1.5rem; font-weight: 900;
+    color: var(--text);
+    text-decoration: none;
+    display: flex; align-items: center; gap: .5rem;
+    cursor: pointer;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links {
+    display: flex; align-items: center; gap: .25rem;
+    list-style: none;
+    position: relative;
+  }
+  .nav-links > li { position: relative; }
+  .nav-links > li > a {
+    color: var(--text2); font-size: .875rem; font-weight: 500;
+    text-decoration: none; padding: .5rem .9rem;
+    border-radius: 8px; cursor: pointer; display: block;
+    transition: all .2s;
+  }
+  .nav-links > li > a:hover, .nav-links > li.active > a {
+    color: var(--text); background: var(--glow);
+  }
+  .dropdown {
+    position: absolute; top: calc(100% + 8px); left: 0;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); min-width: 220px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    display: none; z-index: 200;
+    animation: fadeDown .2s ease;
+  }
+  @keyframes fadeDown { from { opacity:0; transform: translateY(-8px) } to { opacity:1; transform: translateY(0) } }
+  .nav-links > li:hover .dropdown { display: block; }
+  .dropdown a {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .65rem 1.1rem; color: var(--text2); font-size: .85rem;
+    text-decoration: none; transition: all .15s;
+    cursor: pointer;
+  }
+  .dropdown a:hover { color: var(--text); background: var(--glow); }
+  .dropdown .sub-arrow::after { content: ' ›'; }
+  .sub-dropdown-wrap { position: relative; }
+  .sub-dropdown {
+    position: absolute; left: 100%; top: 0;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); min-width: 200px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    display: none; z-index: 300;
+  }
+  .sub-dropdown-wrap:hover .sub-dropdown { display: block; }
+  .sub-dropdown a { font-size: .82rem; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 7rem 2rem 4rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(108,99,255,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 80% 70%, rgba(255,101,132,0.08) 0%, transparent 60%);
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(108,99,255,0.05) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(108,99,255,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .hero-content { position: relative; z-index: 1; max-width: 760px; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.35);
+    border-radius: 100px; padding: .35rem 1rem;
+    font-size: .78rem; font-weight: 600; color: var(--accent);
+    letter-spacing: .08em; text-transform: uppercase; margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900; line-height: 1.1;
+    margin-bottom: 1.5rem; letter-spacing: -.02em;
+  }
+  .hero h1 em { color: var(--accent); font-style: normal; }
+  .hero p {
+    font-size: 1.1rem; color: var(--text2);
+    line-height: 1.7; margin-bottom: 2.5rem; max-width: 560px; margin-inline: auto;
+  }
+  .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: .8rem 2rem; border-radius: 10px; font-weight: 600;
+    font-size: .9rem; cursor: pointer; border: none;
+    transition: all .2s; text-decoration: none; display: inline-flex; align-items: center; gap: .5rem;
+  }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 24px rgba(108,99,255,0.35); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(108,99,255,0.5); }
+  .btn-secondary {
+    background: transparent; color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--glow); border-color: var(--accent); }
+
+  /* STATS */
+  .stats {
+    display: flex; justify-content: center; gap: 3rem;
+    padding: 2rem; flex-wrap: wrap;
+  }
+  .stat { text-align: center; }
+  .stat .num {
+    font-family: var(--font-display); font-size: 2rem; font-weight: 900; color: var(--accent);
+  }
+  .stat .lbl { font-size: .8rem; color: var(--text2); margin-top: .25rem; }
+
+  /* SECTION */
+  .section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
+  .section-header { text-align: center; margin-bottom: 3rem; }
+  .section-header h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900; margin-bottom: .75rem;
+  }
+  .section-header p { color: var(--text2); font-size: 1rem; max-width: 500px; margin: 0 auto; }
+
+  /* MENU CARDS */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+  }
+  .menu-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    cursor: pointer;
+    transition: all .25s;
+    position: relative; overflow: hidden;
+  }
+  .menu-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--accent) 0%, transparent 60%);
+    opacity: 0; transition: opacity .3s;
+  }
+  .menu-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 12px 40px var(--glow); }
+  .menu-card:hover::before { opacity: .07; }
+  .menu-card .icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+  .menu-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: .4rem; position: relative; }
+  .menu-card p { font-size: .82rem; color: var(--text2); line-height: 1.5; position: relative; }
+  .menu-card .arrow {
+    position: absolute; right: 1.25rem; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text2); font-size: 1.2rem;
+    transition: all .2s;
+  }
+  .menu-card:hover .arrow { color: var(--accent); transform: translateY(-50%) translateX(4px); }
+
+  /* ARTICLE SECTION */
+  #article-section {
+    display: none;
+    padding: 5rem 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  .breadcrumb {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .85rem; color: var(--text2); margin-bottom: 2rem; flex-wrap: wrap;
+  }
+  .breadcrumb span { cursor: pointer; }
+  .breadcrumb span:hover { color: var(--accent); }
+  .breadcrumb .sep { color: var(--border); }
+  .article-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+  .article-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.5rem;
+    cursor: pointer; transition: all .2s;
+  }
+  .article-card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 8px 30px var(--glow); }
+  .article-type {
+    display: inline-block;
+    padding: .25rem .75rem; border-radius: 100px;
+    font-size: .72rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+  .type-materi { background: rgba(108,99,255,0.2); color: var(--accent); }
+  .type-quiz { background: rgba(255,101,132,0.2); color: var(--accent2); }
+  .type-asesmen { background: rgba(56,214,128,0.2); color: #38d680; }
+  .article-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
+  .article-card p { font-size: .8rem; color: var(--text2); line-height: 1.5; }
+  .article-card .meta { font-size: .73rem; color: var(--text2); margin-top: .75rem; }
+  .empty-state {
+    text-align: center; padding: 4rem; color: var(--text2);
+    grid-column: 1/-1;
+  }
+  .empty-state .big-icon { font-size: 4rem; margin-bottom: 1rem; display: block; }
+
+  /* ARTICLE DETAIL */
+  #article-detail {
+    display: none;
+    max-width: 760px; margin: 0 auto;
+    padding: 5rem 2rem;
+  }
+  .article-body {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 2.5rem;
+    line-height: 1.8; color: var(--text);
+  }
+  .article-body h2 { font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 1rem; color: var(--text); }
+  .article-body h3 { font-size: 1.15rem; font-weight: 700; margin: 1.5rem 0 .75rem; color: var(--accent); }
+  .article-body p { margin-bottom: 1rem; color: var(--text2); }
+  .article-body ul, .article-body ol { margin: .75rem 0 .75rem 1.5rem; color: var(--text2); }
+  .article-body li { margin-bottom: .4rem; }
+  .article-body table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  .article-body th { background: rgba(108,99,255,0.2); padding: .6rem; color: var(--text); }
+  .article-body td { padding: .6rem; border: 1px solid var(--border); color: var(--text2); text-align: center; }
+  .article-body strong { color: var(--text); }
+
+  /* FOOTER */
+  footer {
+    text-align: center; padding: 2.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text2); font-size: .85rem;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* BACK BTN */
+  .back-btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    color: var(--text2); font-size: .85rem; cursor: pointer;
+    margin-bottom: 1.5rem; transition: color .2s;
+  }
+  .back-btn:hover { color: var(--accent); }
+
+  /* MOBILE */
+  .hamburger {
+    display: none; background: none; border: none;
+    color: var(--text); font-size: 1.5rem; cursor: pointer;
+  }
+  @media (max-width: 768px) {
+    .hamburger { display: block; }
+    .nav-links { display: none; }
+    .nav-links.open {
+      display: flex; flex-direction: column; align-items: flex-start;
+      position: absolute; top: 64px; left: 0; right: 0;
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 1rem;
+    }
+    .nav-links > li { width: 100%; }
+    .nav-links > li > a { width: 100%; }
+    .dropdown { position: static; box-shadow: none; border: none; background: transparent; display: block; }
+    .sub-dropdown { position: static; box-shadow: none; border: none; display: block; padding-left: 1rem; }
+    .stats { gap: 1.5rem; }
+  }
+
+  /* SEARCH */
+  .search-bar {
+    max-width: 500px; margin: 0 auto 3rem;
+    position: relative;
+  }
+  .search-bar input {
+    width: 100%; padding: .9rem 1.25rem .9rem 3rem;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: .9rem;
+    font-family: var(--font-body); outline: none; transition: border .2s;
+  }
+  .search-bar input:focus { border-color: var(--accent); }
+  .search-bar input::placeholder { color: var(--text2); }
+  .search-bar .search-icon {
+    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+    color: var(--text2); font-size: 1rem; pointer-events: none;
+  }
+
+  /* HIGHLIGHT */
+  mark { background: rgba(108,99,255,0.25); color: var(--accent); border-radius: 3px; padding: 0 2px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" onclick="showHome()">
+      <span id="nav-logo-emoji">📚</span>
+      <span><span id="nav-title-word1">Belajar</span> <span style="color:var(--accent)" id="nav-title-word2">Yoek</span></span>
+    </a>
+    <button class="hamburger" onclick="toggleMobile()">☰</button>
+    <ul class="nav-links" id="navLinks"></ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="heroSection">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🚀 Platform Belajar Online</div>
+    <h1 id="heroTitle">Belajar Lebih <em>Mudah</em>, Lebih Seru!</h1>
+    <p id="heroSubText">Platform pembelajaran lengkap untuk SD, SMP, SMA dengan materi, quiz, dan asesmen interaktif.</p>
+    <div class="hero-btns">
+      <a class="btn btn-primary" onclick="scrollToMenus()">🎯 Mulai Belajar</a>
+      <a class="btn btn-secondary" href="admin.html">⚙️ Admin Panel</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats" id="statsSection">
+  <div class="stat"><div class="num" id="statMenus">5</div><div class="lbl">Kategori</div></div>
+  <div class="stat"><div class="num" id="statArticles">4</div><div class="lbl">Artikel</div></div>
+  <div class="stat"><div class="num">100%</div><div class="lbl">Gratis</div></div>
+</div>
+
+<!-- MAIN MENUS -->
+<div id="homeSection">
+  <div class="section" id="menuSection">
+    <div class="section-header">
+      <h2>Pilih Kategori Belajar</h2>
+      <p>Temukan materi yang sesuai dengan tingkatan dan kebutuhanmu</p>
+    </div>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Cari materi, kelas, atau topik..." oninput="handleSearch(this.value)">
+    </div>
+    <div class="menu-grid" id="mainMenuGrid"></div>
+  </div>
+</div>
+
+<!-- SUBMENU / ARTICLE LIST -->
+<div id="article-section">
+  <div class="breadcrumb" id="breadcrumb"></div>
+  <div class="section-header">
+    <h2 id="article-section-title">Pilih Sub Menu</h2>
+  </div>
+  <div class="article-grid" id="articleGrid"></div>
+</div>
+
+<!-- ARTICLE DETAIL -->
+<div id="article-detail">
+  <div class="back-btn" id="detailBackBtn">← Kembali</div>
+  <div class="breadcrumb" id="detailBreadcrumb"></div>
+  <div class="article-body" id="articleBody"></div>
+</div>
+
+<footer>
+  <p id="footerText">Belajar Yoek — Platform Belajar Online Indonesia &nbsp;|&nbsp; <a href="admin.html">Admin Panel</a></p>
+</footer>
+
+<script>
+// =====================================================
+// STATE
+// =====================================================
+let DATA = null;
+let currentMenu = null;
+let navStack = [];
+
+function loadData() {
+  const saved = localStorage.getItem('belajarYoekData');
+  if (saved) {
+    try { DATA = JSON.parse(saved); } catch(e) { DATA = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+  } else {
+    DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+}
+
+// =====================================================
+// INIT
+// =====================================================
+function init() {
+  loadData();
+  applyConfig();
+  buildNav();
+  buildMainMenuGrid(DATA.menus);
+  updateStats();
+}
+
+function applyConfig() {
+  const c = DATA.siteConfig;
+  document.title = c.title;
+  document.documentElement.style.setProperty('--accent', c.accentColor || '#6C63FF');
+  document.getElementById('nav-logo-emoji').textContent = c.logoEmoji || '📚';
+  const titleParts = c.title.split(' ');
+  document.getElementById('nav-title-word1').textContent = titleParts[0] || '';
+  document.getElementById('nav-title-word2').textContent = titleParts.slice(1).join(' ') || '';
+  document.getElementById('heroTitle').innerHTML = c.heroText.replace(/(<em>|<\/em>|Mudah|mudah)/, m => `<em>${m.replace(/<\/?em>/g,'')}</em>`);
+  // simpler:
+  document.getElementById('heroTitle').innerHTML = c.heroText || 'Belajar Lebih <em>Mudah</em>, Lebih Seru!';
+  document.getElementById('heroSubText').textContent = c.heroSubText || '';
+  document.getElementById('footerText').innerHTML = `${c.footerText} &nbsp;|&nbsp; <a href="admin.html">Admin Panel</a>`;
+}
+
+function updateStats() {
+  document.getElementById('statMenus').textContent = DATA.menus.length;
+  document.getElementById('statArticles').textContent = DATA.articles.filter(a => a.published).length;
+}
+
+// =====================================================
+// NAV BUILD
+// =====================================================
+function buildNav() {
+  const nav = document.getElementById('navLinks');
+  nav.innerHTML = '';
+  DATA.menus.forEach(menu => {
+    const li = document.createElement('li');
+    li.innerHTML = `<a onclick="navigateMenu('${menu.id}')">${menu.icon || ''} ${menu.label}</a>`;
+    if (menu.submenus && menu.submenus.length) {
+      const dd = document.createElement('div');
+      dd.className = 'dropdown';
+      menu.submenus.forEach(sub => {
+        if (sub.submenus && sub.submenus.length) {
+          const wrap = document.createElement('div');
+          wrap.className = 'sub-dropdown-wrap';
+          wrap.innerHTML = `<a class="sub-arrow" onclick="navigateMenu('${sub.id}')">${sub.label}</a>`;
+          const subdd = document.createElement('div');
+          subdd.className = 'sub-dropdown';
+          sub.submenus.forEach(s2 => {
+            subdd.innerHTML += `<a onclick="navigateMenu('${s2.id}')">${s2.label}</a>`;
+          });
+          wrap.appendChild(subdd);
+          dd.appendChild(wrap);
+        } else {
+          dd.innerHTML += `<a onclick="navigateMenu('${sub.id}')">${sub.label}</a>`;
+        }
+      });
+      li.appendChild(dd);
+    }
+    nav.appendChild(li);
+  });
+  // About
+  const about = document.createElement('li');
+  about.innerHTML = `<a onclick="showHome()">🏠 Home</a>`;
+  nav.appendChild(about);
+}
+
+// =====================================================
+// MAIN MENU GRID
+// =====================================================
+function buildMainMenuGrid(menus) {
+  const grid = document.getElementById('mainMenuGrid');
+  grid.innerHTML = menus.map(m => `
+    <div class="menu-card" onclick="navigateMenu('${m.id}')">
+      <span class="icon">${m.icon || '📖'}</span>
+      <h3>${m.label}</h3>
+      <p>${m.description || ''}</p>
+      <span class="arrow">→</span>
+    </div>
+  `).join('');
+}
+
+// =====================================================
+// NAVIGATION
+// =====================================================
+function findMenu(id, menus) {
+  for (const m of menus) {
+    if (m.id === id) return { menu: m, parent: null };
+    if (m.submenus) {
+      for (const s of m.submenus) {
+        if (s.id === id) return { menu: s, parent: m };
+        if (s.submenus) {
+          for (const s2 of s.submenus) {
+            if (s2.id === id) return { menu: s2, parent: s, grandparent: m };
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function navigateMenu(id) {
+  const found = findMenu(id, DATA.menus);
+  if (!found) return;
+  const { menu, parent, grandparent } = found;
+
+  showSection('menu-view');
+  currentMenu = menu;
+
+  // Build breadcrumb
+  let crumbs = [];
+  if (grandparent) crumbs.push({ label: grandparent.label, id: grandparent.id });
+  if (parent) crumbs.push({ label: parent.label, id: parent.id });
+  crumbs.push({ label: menu.label, id: menu.id });
+
+  const bc = document.getElementById('breadcrumb');
+  bc.innerHTML = `<span onclick="showHome()">🏠 Home</span>` +
+    crumbs.map(c => `<span class="sep">›</span><span onclick="navigateMenu('${c.id}')">${c.label}</span>`).join('');
+
+  document.getElementById('article-section-title').textContent = menu.label;
+
+  // Show submenus + articles
+  const grid = document.getElementById('articleGrid');
+  grid.innerHTML = '';
+
+  // Submenus as cards
+  if (menu.submenus && menu.submenus.length) {
+    menu.submenus.forEach(sub => {
+      grid.innerHTML += `
+        <div class="article-card" onclick="navigateMenu('${sub.id}')">
+          <span class="article-type type-materi">📂 Subfolder</span>
+          <h4>${sub.label}</h4>
+          <p>${sub.description || 'Klik untuk melihat isi'}</p>
+        </div>`;
+    });
+  }
+
+  // Articles for this menu
+  const arts = DATA.articles.filter(a => a.menuId === id && a.published);
+  if (arts.length) {
+    arts.forEach(art => {
+      const typeClass = art.type === 'quiz' ? 'type-quiz' : art.type === 'asesmen' ? 'type-asesmen' : 'type-materi';
+      const typeLabel = art.type === 'quiz' ? '🧪 Quiz' : art.type === 'asesmen' ? '📋 Asesmen' : '📖 Materi';
+      grid.innerHTML += `
+        <div class="article-card" onclick="showArticle('${art.id}')">
+          <span class="article-type ${typeClass}">${typeLabel}</span>
+          <h4>${art.title}</h4>
+          <p>${stripHtml(art.content).substring(0, 100)}...</p>
+          <div class="meta">📅 ${art.createdAt || ''}</div>
+        </div>`;
+    });
+  }
+
+  if (!menu.submenus?.length && !arts.length) {
+    grid.innerHTML = `<div class="empty-state"><span class="big-icon">📭</span><p>Belum ada konten di sini.<br>Tambahkan artikel via Admin Panel.</p></div>`;
+  }
+}
+
+function stripHtml(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || '';
+}
+
+// =====================================================
+// ARTICLE DETAIL
+// =====================================================
+function showArticle(id) {
+  const art = DATA.articles.find(a => a.id === id);
+  if (!art) return;
+  showSection('article-detail');
+
+  document.getElementById('articleBody').innerHTML = art.content;
+
+  const found = findMenu(art.menuId, DATA.menus);
+  let crumbs = [];
+  if (found) {
+    if (found.grandparent) crumbs.push({ label: found.grandparent.label, id: found.grandparent.id });
+    if (found.parent) crumbs.push({ label: found.parent.label, id: found.parent.id });
+    crumbs.push({ label: found.menu.label, id: found.menu.id });
+  }
+  const bc = document.getElementById('detailBreadcrumb');
+  bc.innerHTML = `<span onclick="showHome()">🏠 Home</span>` +
+    crumbs.map(c => `<span class="sep">›</span><span onclick="navigateMenu('${c.id}')">${c.label}</span>`).join('') +
+    `<span class="sep">›</span><span>${art.title}</span>`;
+
+  document.getElementById('detailBackBtn').onclick = () => navigateMenu(art.menuId);
+}
+
+// =====================================================
+// SECTIONS
+// =====================================================
+function showSection(view) {
+  document.getElementById('heroSection').style.display = 'none';
+  document.getElementById('statsSection').style.display = 'none';
+  document.getElementById('homeSection').style.display = 'none';
+  document.getElementById('article-section').style.display = 'none';
+  document.getElementById('article-detail').style.display = 'none';
+
+  if (view === 'home') {
+    document.getElementById('heroSection').style.display = '';
+    document.getElementById('statsSection').style.display = '';
+    document.getElementById('homeSection').style.display = '';
+  } else if (view === 'menu-view') {
+    document.getElementById('article-section').style.display = '';
+    document.getElementById('article-section').style.paddingTop = '6rem';
+  } else if (view === 'article-detail') {
+    document.getElementById('article-detail').style.display = '';
+    document.getElementById('article-detail').style.paddingTop = '6rem';
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showHome() {
+  currentMenu = null;
+  showSection('home');
+  buildMainMenuGrid(DATA.menus);
+  document.getElementById('searchInput').value = '';
+}
+
+function scrollToMenus() {
+  document.getElementById('menuSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// =====================================================
+// SEARCH
+// =====================================================
+function handleSearch(val) {
+  if (!val.trim()) {
+    buildMainMenuGrid(DATA.menus);
+    return;
+  }
+  const q = val.toLowerCase();
+  const matchedMenus = DATA.menus.filter(m =>
+    m.label.toLowerCase().includes(q) || (m.description||'').toLowerCase().includes(q)
+  );
+  const grid = document.getElementById('mainMenuGrid');
+  if (matchedMenus.length) {
+    grid.innerHTML = matchedMenus.map(m => `
+      <div class="menu-card" onclick="navigateMenu('${m.id}')">
+        <span class="icon">${m.icon || '📖'}</span>
+        <h3>${highlight(m.label, q)}</h3>
+        <p>${highlight(m.description || '', q)}</p>
+        <span class="arrow">→</span>
+      </div>
+    `).join('');
+  } else {
+    // search articles
+    const arts = DATA.articles.filter(a =>
+      a.published && (a.title.toLowerCase().includes(q) || stripHtml(a.content).toLowerCase().includes(q))
+    );
+    if (arts.length) {
+      grid.innerHTML = arts.map(art => {
+        const typeClass = art.type === 'quiz' ? 'type-quiz' : 'type-materi';
+        return `<div class="menu-card" onclick="showArticle('${art.id}')">
+          <span class="icon">📄</span>
+          <h3>${highlight(art.title, q)}</h3>
+          <p>${highlight(stripHtml(art.content).substring(0,100), q)}...</p>
+          <span class="arrow">→</span>
+        </div>`;
+      }).join('');
+    } else {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+        <span class="big-icon">🔍</span><p>Tidak ada hasil untuk "<strong>${val}</strong>"</p>
+      </div>`;
+    }
+  }
+}
+
+function highlight(text, q) {
+  if (!q) return text;
+  return text.replace(new RegExp(`(${q})`, 'gi'), '<mark>$1</mark>');
+}
+
+// =====================================================
+// MOBILE
+// =====================================================
+function toggleMobile() {
+  document.getElementById('navLinks').classList.toggle('open');
+}
+
+// =====================================================
+// LISTEN FOR DATA UPDATES FROM ADMIN (same-origin)
+// =====================================================
+window.addEventListener('storage', e => {
+  if (e.key === 'belajarYoekData') {
+    loadData();
+    applyConfig();
+    buildNav();
+    updateStats();
+    if (currentMenu) navigateMenu(currentMenu.id);
+    else buildMainMenuGrid(DATA.menus);
+  }
+});
+
+init();
+</script>
+</body>
+</html>

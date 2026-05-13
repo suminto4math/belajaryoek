@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Belajar Yoek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>
+  :root {
+    --accent: #6C63FF;
+    --accent2: #FF6584;
+    --green: #38d680;
+    --bg: #0D0D14;
+    --bg2: #13131F;
+    --bg3: #1A1A2E;
+    --card: #16213E;
+    --sidebar: #10101A;
+    --text: #E8E8F0;
+    --text2: #9898B8;
+    --border: rgba(108,99,255,0.2);
+    --danger: #ff4d4d;
+    --radius: 10px;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* LOGIN */
+  #loginScreen {
+    position: fixed; inset: 0; z-index: 999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .login-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 2.5rem; width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    text-align: center;
+  }
+  .login-box .logo { font-size: 3rem; margin-bottom: 1rem; }
+  .login-box h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: .25rem; }
+  .login-box p { font-size: .85rem; color: var(--text2); margin-bottom: 2rem; }
+  .login-box input {
+    width: 100%; padding: .75rem 1rem;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: var(--font);
+    font-size: .9rem; margin-bottom: .75rem; outline: none;
+    transition: border .2s;
+  }
+  .login-box input:focus { border-color: var(--accent); }
+  .login-box .error { color: var(--danger); font-size: .82rem; margin-bottom: .75rem; display: none; }
+
+  /* LAYOUT */
+  .admin-layout { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px; min-height: 100vh;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 50;
+  }
+  .sidebar-logo {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 1.1rem; font-weight: 700;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .sidebar-logo .badge {
+    font-size: .65rem; background: var(--accent); color: #fff;
+    padding: .15rem .5rem; border-radius: 100px; font-weight: 600;
+  }
+  .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+  .nav-section { padding: .5rem 1.5rem .25rem; font-size: .7rem; font-weight: 600; color: var(--text2); letter-spacing: .1em; text-transform: uppercase; }
+  .sidebar-nav a {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .65rem 1.5rem; color: var(--text2); font-size: .875rem;
+    cursor: pointer; transition: all .15s; text-decoration: none;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-nav a:hover { color: var(--text); background: rgba(108,99,255,0.08); }
+  .sidebar-nav a.active { color: var(--accent); background: rgba(108,99,255,0.1); border-left-color: var(--accent); }
+  .sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: .8rem; color: var(--text2);
+  }
+  .sidebar-footer a { color: var(--accent); cursor: pointer; }
+
+  /* MAIN */
+  .main { margin-left: 240px; flex: 1; padding: 2rem; max-width: calc(100% - 240px); }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* HEADER */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2rem; flex-wrap: gap;
+  }
+  .page-header h1 { font-size: 1.5rem; font-weight: 700; }
+  .page-header p { font-size: .85rem; color: var(--text2); margin-top: .2rem; }
+
+  /* BTN */
+  .btn {
+    padding: .6rem 1.25rem; border-radius: 8px; font-weight: 600;
+    font-size: .85rem; cursor: pointer; border: none; font-family: var(--font);
+    transition: all .2s; display: inline-flex; align-items: center; gap: .4rem;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: .85; transform: translateY(-1px); }
+  .btn-danger { background: rgba(255,77,77,0.15); color: var(--danger); border: 1px solid rgba(255,77,77,0.3); }
+  .btn-danger:hover { background: rgba(255,77,77,0.25); }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .btn-sm { padding: .35rem .75rem; font-size: .78rem; }
+  .btn-success { background: rgba(56,214,128,0.15); color: var(--green); border: 1px solid rgba(56,214,128,0.3); }
+
+  /* CARDS / STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem;
+  }
+  .stat-card .num { font-size: 2rem; font-weight: 700; color: var(--accent); }
+  .stat-card .lbl { font-size: .78rem; color: var(--text2); margin-top: .2rem; }
+
+  /* TABLE */
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--bg3); padding: .75rem 1rem; text-align: left; font-size: .78rem; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; }
+  td { padding: .7rem 1rem; border-top: 1px solid var(--border); font-size: .875rem; vertical-align: middle; }
+  tr:hover td { background: rgba(108,99,255,0.04); }
+  .badge {
+    display: inline-block; padding: .2rem .6rem; border-radius: 100px;
+    font-size: .7rem; font-weight: 600;
+  }
+  .badge-published { background: rgba(56,214,128,0.15); color: var(--green); }
+  .badge-draft { background: rgba(255,200,0,0.15); color: #ffc800; }
+  .badge-materi { background: rgba(108,99,255,0.2); color: var(--accent); }
+  .badge-quiz { background: rgba(255,101,132,0.2); color: var(--accent2); }
+  .badge-asesmen { background: rgba(56,214,128,0.2); color: var(--green); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 500; display: none; align-items: center; justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 16px; width: 100%; max-width: 680px;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    animation: modalIn .2s ease;
+  }
+  @keyframes modalIn { from { opacity:0; transform: scale(.96) } to { opacity:1; transform: scale(1) } }
+  .modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-header h3 { font-size: 1rem; font-weight: 700; }
+  .modal-close { background: none; border: none; color: var(--text2); font-size: 1.25rem; cursor: pointer; line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 1.5rem; }
+  .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: .75rem; justify-content: flex-end; }
+
+  /* FORM */
+  .form-group { margin-bottom: 1.25rem; }
+  label { display: block; font-size: .82rem; font-weight: 600; color: var(--text2); margin-bottom: .4rem; }
+  input[type=text], input[type=password], select, textarea {
+    width: 100%; padding: .7rem .9rem;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: var(--font);
+    font-size: .875rem; outline: none; transition: border .2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select option { background: var(--bg3); }
+  textarea { resize: vertical; min-height: 200px; line-height: 1.6; font-family: var(--mono); font-size: .82rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* EDITOR TOOLBAR */
+  .editor-toolbar {
+    display: flex; flex-wrap: wrap; gap: .35rem;
+    margin-bottom: .5rem; padding: .5rem; background: var(--bg3);
+    border: 1px solid var(--border); border-radius: 8px 8px 0 0;
+    border-bottom: none;
+  }
+  .editor-toolbar button {
+    padding: .25rem .55rem; background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    border-radius: 5px; color: var(--text2); font-size: .78rem; cursor: pointer;
+    font-family: var(--font); transition: all .15s;
+  }
+  .editor-toolbar button:hover { color: var(--text); background: rgba(108,99,255,0.2); border-color: var(--accent); }
+  .editor-toolbar textarea { border-radius: 0 0 8px 8px; border-top: none; border: 1px solid var(--border); }
+
+  /* PREVIEW */
+  .preview-pane {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1rem; margin-top: .5rem;
+    min-height: 100px; font-size: .85rem; line-height: 1.7; color: var(--text);
+    display: none;
+  }
+  .preview-pane.show { display: block; }
+  .preview-pane h2 { color: var(--text); margin-bottom: .5rem; }
+  .preview-pane h3 { color: var(--accent); margin: 1rem 0 .5rem; }
+  .preview-pane p { color: var(--text2); margin-bottom: .5rem; }
+  .preview-pane ul, .preview-pane ol { padding-left: 1.5rem; color: var(--text2); }
+  .preview-pane table { width: 100%; border-collapse: collapse; }
+  .preview-pane th { background: rgba(108,99,255,0.2); padding: .4rem; }
+  .preview-pane td { border: 1px solid var(--border); padding: .4rem; text-align: center; }
+
+  /* TREE */
+  .menu-tree { }
+  .tree-item {
+    border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: .5rem; overflow: hidden;
+  }
+  .tree-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .75rem 1rem; background: var(--card); cursor: pointer;
+  }
+  .tree-header:hover { background: rgba(108,99,255,0.08); }
+  .tree-title { display: flex; align-items: center; gap: .5rem; font-weight: 600; font-size: .9rem; }
+  .tree-actions { display: flex; gap: .4rem; }
+  .tree-children { padding: .5rem .5rem .5rem 2rem; background: var(--bg2); display: none; }
+  .tree-children.open { display: block; }
+  .tree-child {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .5rem .75rem; border-radius: 6px; margin-bottom: .3rem;
+    background: var(--card); border: 1px solid var(--border);
+  }
+  .tree-grandchildren { padding-left: 1.5rem; }
+  .expand-btn { background: none; border: none; color: var(--text2); cursor: pointer; font-size: .85rem; transition: transform .2s; }
+  .expand-btn.open { transform: rotate(90deg); }
+
+  /* SETTINGS */
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .settings-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.5rem;
+  }
+  .settings-card h3 { font-size: .95rem; font-weight: 700; margin-bottom: 1.25rem; }
+  .color-row { display: flex; align-items: center; gap: .75rem; }
+  .color-row input[type=color] {
+    width: 40px; height: 40px; border: none; border-radius: 8px;
+    cursor: pointer; background: none; padding: 0;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
+    background: var(--green); color: #000;
+    padding: .75rem 1.25rem; border-radius: 8px; font-weight: 600; font-size: .875rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    transform: translateY(100px); opacity: 0; transition: all .3s;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: var(--danger); color: #fff; }
+
+  /* CONFIRM */
+  .confirm-modal { max-width: 420px; }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 3rem; color: var(--text2); }
+  .empty .icon { font-size: 3rem; display: block; margin-bottom: .75rem; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); transition: transform .3s; }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; max-width: 100%; }
+    .settings-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="logo">🔐</div>
+    <h2>Admin Panel</h2>
+    <p>Masukkan password untuk mengakses panel admin</p>
+    <input type="password" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="error" id="loginError">Password salah. Coba lagi.</div>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Masuk →</button>
+    <p style="font-size:.75rem;color:var(--text2);margin-top:1rem">Default: <code style="background:var(--bg3);padding:.1rem .4rem;border-radius:4px">admin123</code></p>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="admin-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      📚 <span>Belajar Yoek</span>
+      <span class="badge">ADMIN</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <a onclick="showPage('dashboard')" class="active" id="nav-dashboard">📊 Dashboard</a>
+      <div class="nav-section">Konten</div>
+      <a onclick="showPage('menus')" id="nav-menus">📂 Kelola Menu</a>
+      <a onclick="showPage('articles')" id="nav-articles">📝 Kelola Artikel</a>
+      <div class="nav-section">Pengaturan</div>
+      <a onclick="showPage('settings')" id="nav-settings">⚙️ Pengaturan Situs</a>
+      <a onclick="showPage('backup')" id="nav-backup">💾 Backup & Restore</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="index.html" target="_blank">🌐 Lihat Website →</a><br><br>
+      <span style="font-size:.72rem">v1.0 · Belajar Yoek Admin</span>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div><h1>Dashboard</h1><p>Selamat datang di admin panel Belajar Yoek</p></div>
+        <a href="index.html" target="_blank" class="btn btn-ghost">🌐 Lihat Website</a>
+      </div>
+      <div class="stats-row" id="dashStats"></div>
+      <h3 style="font-size:.9rem;font-weight:700;color:var(--text2);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.05em">Artikel Terbaru</h3>
+      <div class="table-wrap">
+        <table id="recentArticles">
+          <thead><tr><th>Judul</th><th>Menu</th><th>Tipe</th><th>Status</th><th>Tanggal</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MENUS -->
+    <div class="page" id="page-menus">
+      <div class="page-header">
+        <div><h1>Kelola Menu</h1><p>Tambah, edit, atau hapus menu navigasi</p></div>
+        <button class="btn btn-primary" onclick="openMenuModal()">+ Tambah Menu</button>
+      </div>
+      <div class="menu-tree" id="menuTree"></div>
+    </div>
+
+    <!-- ARTICLES -->
+    <div class="page" id="page-articles">
+      <div class="page-header">
+        <div><h1>Kelola Artikel</h1><p>Tulis dan kelola semua konten pembelajaran</p></div>
+        <button class="btn btn-primary" onclick="openArticleModal()">+ Tambah Artikel</button>
+      </div>
+      <div style="display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <input type="text" id="artSearch" placeholder="🔍 Cari artikel..." style="width:240px" oninput="filterArticles()">
+        <select id="artFilter" style="width:160px" onchange="filterArticles()">
+          <option value="">Semua Tipe</option>
+          <option value="materi">Materi</option>
+          <option value="quiz">Quiz</option>
+          <option value="asesmen">Asesmen</option>
+        </select>
+        <select id="artStatus" style="width:160px" onchange="filterArticles()">
+          <option value="">Semua Status</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Judul</th><th>Menu</th><th>Tipe</th><th>Status</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+          <tbody id="articleTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div><h1>Pengaturan Situs</h1><p>Kustomisasi tampilan dan informasi website</p></div>
+        <button class="btn btn-primary" onclick="saveSettings()">💾 Simpan</button>
+      </div>
+      <div class="settings-grid">
+        <div class="settings-card">
+          <h3>Identitas Situs</h3>
+          <div class="form-group">
+            <label>Nama Situs</label>
+            <input type="text" id="cfg-title" placeholder="Belajar Yoek">
+          </div>
+          <div class="form-group">
+            <label>Tagline</label>
+            <input type="text" id="cfg-tagline" placeholder="Platform Belajar Online">
+          </div>
+          <div class="form-group">
+            <label>Logo Emoji</label>
+            <input type="text" id="cfg-emoji" placeholder="📚">
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>Tampilan Hero</h3>
+          <div class="form-group">
+            <label>Teks Hero (boleh pakai &lt;em&gt; untuk highlight)</label>
+            <input type="text" id="cfg-heroText" placeholder="Belajar Lebih <em>Mudah</em>...">
+          </div>
+          <div class="form-group">
+            <label>Sub-Teks Hero</label>
+            <input type="text" id="cfg-heroSub" placeholder="Platform pembelajaran...">
+          </div>
+          <div class="form-group">
+            <label>Warna Aksen</label>
+            <div class="color-row">
+              <input type="color" id="cfg-color" value="#6C63FF">
+              <input type="text" id="cfg-colorText" value="#6C63FF" style="font-family:var(--mono);width:100px">
+            </div>
+          </div>
+        </div>
+        <div class="settings-card" style="grid-column:1/-1">
+          <h3>Footer</h3>
+          <div class="form-group">
+            <label>Teks Footer</label>
+            <input type="text" id="cfg-footer" placeholder="Belajar Yoek — Platform Belajar Online Indonesia">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BACKUP -->
+    <div class="page" id="page-backup">
+      <div class="page-header">
+        <div><h1>Backup & Restore</h1><p>Ekspor atau impor semua data website</p></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+        <div class="settings-card">
+          <h3>💾 Export Data</h3>
+          <p style="font-size:.85rem;color:var(--text2);margin-bottom:1.25rem">Download semua data (menu + artikel + pengaturan) sebagai file JSON. Simpan sebagai backup.</p>
+          <button class="btn btn-primary" onclick="exportData()">⬇️ Download Backup</button>
+        </div>
+        <div class="settings-card">
+          <h3>📂 Import Data</h3>
+          <p style="font-size:.85rem;color:var(--text2);margin-bottom:1.25rem">Upload file backup JSON untuk mengembalikan data. <strong style="color:var(--danger)">Data saat ini akan tertimpa!</strong></p>
+          <input type="file" id="importFile" accept=".json" style="margin-bottom:.75rem;font-size:.82rem">
+          <button class="btn btn-ghost" onclick="importData()">⬆️ Import Backup</button>
+        </div>
+        <div class="settings-card" style="grid-column:1/-1">
+          <h3>🔄 Reset ke Default</h3>
+          <p style="font-size:.85rem;color:var(--text2);margin-bottom:1.25rem">Hapus semua perubahan dan kembalikan ke data bawaan. <strong style="color:var(--danger)">Tidak bisa dibatalkan!</strong></p>
+          <button class="btn btn-danger" onclick="confirmReset()">⚠️ Reset Semua Data</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL: ADD/EDIT MENU -->
+<div class="modal-overlay" id="menuModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="menuModalTitle">Tambah Menu</h3>
+      <button class="modal-close" onclick="closeModal('menuModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="menuId">
+      <div class="form-group">
+        <label>Label Menu *</label>
+        <input type="text" id="menuLabel" placeholder="contoh: Fisika">
+      </div>
+      <div class="form-group">
+        <label>Icon (Emoji)</label>
+        <input type="text" id="menuIcon" placeholder="📖">
+      </div>
+      <div class="form-group">
+        <label>Deskripsi</label>
+        <input type="text" id="menuDesc" placeholder="Deskripsi singkat menu ini">
+      </div>
+      <div class="form-group">
+        <label>Menu Induk (kosongkan untuk menu utama)</label>
+        <select id="menuParent">
+          <option value="">— Menu Utama —</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('menuModal')">Batal</button>
+      <button class="btn btn-primary" onclick="saveMenu()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADD/EDIT ARTICLE -->
+<div class="modal-overlay" id="articleModal">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <h3 id="artModalTitle">Tambah Artikel</h3>
+      <button class="modal-close" onclick="closeModal('articleModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="artId">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Judul Artikel *</label>
+          <input type="text" id="artTitle" placeholder="Judul materi...">
+        </div>
+        <div class="form-group">
+          <label>Tipe Konten</label>
+          <select id="artType">
+            <option value="materi">📖 Materi</option>
+            <option value="quiz">🧪 Quiz</option>
+            <option value="asesmen">📋 Asesmen</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Masukkan ke Menu</label>
+          <select id="artMenu"></select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="artPublished">
+            <option value="true">✅ Published</option>
+            <option value="false">📝 Draft</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Konten (HTML)</label>
+        <div class="editor-toolbar">
+          <button onclick="insertHtml('<h2>Judul</h2>\n')">H2</button>
+          <button onclick="insertHtml('<h3>Sub Judul</h3>\n')">H3</button>
+          <button onclick="wrapSel('<strong>','</strong>')"><b>Bold</b></button>
+          <button onclick="wrapSel('<em>','</em>')"><i>Italic</i></button>
+          <button onclick="insertHtml('<p>Paragraf teks di sini.</p>\n')">¶ P</button>
+          <button onclick="insertHtml('<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>\n')">• List</button>
+          <button onclick="insertHtml('<ol>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ol>\n')">1. OL</button>
+          <button onclick="insertHtml('<table border=&quot;1&quot; style=&quot;border-collapse:collapse;width:100%&quot;>\n  <tr><th>Kolom 1</th><th>Kolom 2</th></tr>\n  <tr><td>Data 1</td><td>Data 2</td></tr>\n</table>\n')">Table</button>
+          <button onclick="insertHtml('<br>\n')">BR</button>
+          <button onclick="togglePreview()" id="previewBtn">👁 Preview</button>
+        </div>
+        <textarea id="artContent" rows="16" placeholder="<h2>Judul Materi</h2>&#10;<p>Tulis konten materi di sini menggunakan HTML...</p>" oninput="updatePreview()"></textarea>
+        <div class="preview-pane" id="previewPane"></div>
+      </div>
+      <div class="form-group">
+        <label>Tags (pisah dengan koma)</label>
+        <input type="text" id="artTags" placeholder="matematika, aljabar, kelas7">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('articleModal')">Batal</button>
+      <button class="btn btn-primary" onclick="saveArticle()">💾 Simpan Artikel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRM DELETE -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal confirm-modal">
+    <div class="modal-header">
+      <h3>⚠️ Konfirmasi Hapus</h3>
+      <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMsg" style="color:var(--text2)">Yakin ingin menghapus ini?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Batal</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================
+// AUTH
+// =====================================================
+const ADMIN_PASS_KEY = 'byAdmin_pass';
+let storedPass = localStorage.getItem(ADMIN_PASS_KEY) || 'admin123';
+
+function doLogin() {
+  const val = document.getElementById('pwInput').value;
+  if (val === storedPass) {
+    document.getElementById('loginScreen').style.display = 'none';
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('pwInput').value = '';
+  }
+}
+
+// =====================================================
+// DATA
+// =====================================================
+let DATA = null;
+
+function loadData() {
+  const saved = localStorage.getItem('belajarYoekData');
+  if (saved) {
+    try { DATA = JSON.parse(saved); }
+    catch(e) { DATA = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+  } else {
+    DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+}
+
+function saveData() {
+  localStorage.setItem('belajarYoekData', JSON.stringify(DATA));
+  window.dispatchEvent(new StorageEvent('storage', { key: 'belajarYoekData' }));
+}
+
+function genId() {
+  return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+}
+
+// =====================================================
+// PAGE NAV
+// =====================================================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'menus') renderMenuTree();
+  if (name === 'articles') renderArticleTable();
+  if (name === 'settings') loadSettings();
+}
+
+// =====================================================
+// DASHBOARD
+// =====================================================
+function renderDashboard() {
+  const total = DATA.menus.length;
+  const arts = DATA.articles.length;
+  const pub = DATA.articles.filter(a => a.published).length;
+  const allMenus = flatMenus(DATA.menus);
+
+  document.getElementById('dashStats').innerHTML = `
+    <div class="stat-card"><div class="num">${total}</div><div class="lbl">Menu Utama</div></div>
+    <div class="stat-card"><div class="num">${allMenus.length}</div><div class="lbl">Total Menu</div></div>
+    <div class="stat-card"><div class="num">${arts}</div><div class="lbl">Total Artikel</div></div>
+    <div class="stat-card"><div class="num">${pub}</div><div class="lbl">Published</div></div>
+    <div class="stat-card"><div class="num">${arts - pub}</div><div class="lbl">Draft</div></div>
+  `;
+
+  const recent = [...DATA.articles].sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,8);
+  const tbody = document.querySelector('#recentArticles tbody');
+  tbody.innerHTML = recent.map(a => `
+    <tr>
+      <td>${a.title}</td>
+      <td>${getMenuLabel(a.menuId)}</td>
+      <td><span class="badge badge-${a.type}">${a.type}</span></td>
+      <td><span class="badge ${a.published ? 'badge-published' : 'badge-draft'}">${a.published ? 'Published' : 'Draft'}</span></td>
+      <td>${a.createdAt || '-'}</td>
+    </tr>`).join('');
+}
+
+function flatMenus(menus, result = []) {
+  for (const m of menus) {
+    result.push(m);
+    if (m.submenus) flatMenus(m.submenus, result);
+  }
+  return result;
+}
+
+function getMenuLabel(id) {
+  const m = flatMenus(DATA.menus).find(x => x.id === id);
+  return m ? m.label : id || '-';
+}
+
+// =====================================================
+// MENU TREE
+// =====================================================
+function renderMenuTree() {
+  const tree = document.getElementById('menuTree');
+  tree.innerHTML = DATA.menus.map(m => buildTreeItem(m, 0)).join('');
+}
+
+function buildTreeItem(menu, depth) {
+  const hasSub = menu.submenus && menu.submenus.length > 0;
+  const subHtml = hasSub ? menu.submenus.map(s => buildTreeItem(s, depth+1)).join('') : '';
+  const indent = depth * 20;
+
+  return `
+    <div class="tree-item" style="margin-left:${indent}px">
+      <div class="tree-header">
+        <div class="tree-title">
+          ${hasSub ? `<button class="expand-btn" onclick="toggleTree(this)">▶</button>` : '<span style="width:20px"></span>'}
+          <span>${menu.icon || '📁'}</span>
+          <span>${menu.label}</span>
+          ${depth > 0 ? `<span style="font-size:.7rem;color:var(--text2);margin-left:.25rem">(sub)</span>` : ''}
+        </div>
+        <div class="tree-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openMenuModal('${menu.id}')">✏️ Edit</button>
+          <button class="btn btn-ghost btn-sm" onclick="openMenuModal(null,'${menu.id}')">+ Sub</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDeleteMenu('${menu.id}')">🗑</button>
+        </div>
+      </div>
+      ${hasSub ? `<div class="tree-children">${subHtml}</div>` : ''}
+    </div>`;
+}
+
+function toggleTree(btn) {
+  btn.classList.toggle('open');
+  const children = btn.closest('.tree-item').querySelector('.tree-children');
+  if (children) children.classList.toggle('open');
+}
+
+// =====================================================
+// MENU MODAL
+// =====================================================
+function openMenuModal(editId = null, parentId = null) {
+  const modal = document.getElementById('menuModal');
+  const allMenus = flatMenus(DATA.menus);
+
+  // Populate parent dropdown
+  const parentSel = document.getElementById('menuParent');
+  parentSel.innerHTML = '<option value="">— Menu Utama —</option>';
+  allMenus.forEach(m => {
+    parentSel.innerHTML += `<option value="${m.id}">${m.label}</option>`;
+  });
+
+  if (editId) {
+    const m = allMenus.find(x => x.id === editId);
+    if (!m) return;
+    document.getElementById('menuModalTitle').textContent = 'Edit Menu';
+    document.getElementById('menuId').value = editId;
+    document.getElementById('menuLabel').value = m.label;
+    document.getElementById('menuIcon').value = m.icon || '';
+    document.getElementById('menuDesc').value = m.description || '';
+    document.getElementById('menuParent').value = m.parentId || '';
+  } else {
+    document.getElementById('menuModalTitle').textContent = 'Tambah Menu';
+    document.getElementById('menuId').value = '';
+    document.getElementById('menuLabel').value = '';
+    document.getElementById('menuIcon').value = '';
+    document.getElementById('menuDesc').value = '';
+    document.getElementById('menuParent').value = parentId || '';
+  }
+  modal.classList.add('open');
+}
+
+function saveMenu() {
+  const id = document.getElementById('menuId').value;
+  const label = document.getElementById('menuLabel').value.trim();
+  const icon = document.getElementById('menuIcon').value.trim();
+  const desc = document.getElementById('menuDesc').value.trim();
+  const parentId = document.getElementById('menuParent').value;
+
+  if (!label) { showToast('Label menu wajib diisi!', true); return; }
+
+  if (id) {
+    // Edit
+    const m = findMenuById(id, DATA.menus);
+    if (m) {
+      m.label = label; m.icon = icon; m.description = desc; m.parentId = parentId || undefined;
+    }
+  } else {
+    // Add
+    const newMenu = { id: genId(), label, icon, description: desc, submenus: [], parentId: parentId || undefined };
+    if (parentId) {
+      const parent = findMenuById(parentId, DATA.menus);
+      if (parent) {
+        if (!parent.submenus) parent.submenus = [];
+        parent.submenus.push(newMenu);
+      }
+    } else {
+      DATA.menus.push(newMenu);
+    }
+  }
+
+  saveData(); closeModal('menuModal'); renderMenuTree();
+  showToast('Menu berhasil disimpan ✓');
+}
+
+function findMenuById(id, menus) {
+  for (const m of menus) {
+    if (m.id === id) return m;
+    if (m.submenus) {
+      const found = findMenuById(id, m.submenus);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function confirmDeleteMenu(id) {
+  const m = findMenuById(id, DATA.menus);
+  document.getElementById('confirmMsg').textContent = `Hapus menu "${m?.label}"? Artikel dalam menu ini tidak akan terhapus.`;
+  document.getElementById('confirmOkBtn').onclick = () => { deleteMenu(id); closeModal('confirmModal'); };
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function deleteMenuFromList(id, menus) {
+  for (let i = menus.length-1; i >= 0; i--) {
+    if (menus[i].id === id) { menus.splice(i, 1); return true; }
+    if (menus[i].submenus && deleteMenuFromList(id, menus[i].submenus)) return true;
+  }
+  return false;
+}
+
+function deleteMenu(id) {
+  deleteMenuFromList(id, DATA.menus);
+  saveData(); renderMenuTree();
+  showToast('Menu dihapus');
+}
+
+// =====================================================
+// ARTICLE TABLE
+// =====================================================
+function renderArticleTable(filter = {}) {
+  let arts = [...DATA.articles];
+  const q = (document.getElementById('artSearch')?.value || '').toLowerCase();
+  const type = document.getElementById('artFilter')?.value || '';
+  const status = document.getElementById('artStatus')?.value || '';
+
+  if (q) arts = arts.filter(a => a.title.toLowerCase().includes(q));
+  if (type) arts = arts.filter(a => a.type === type);
+  if (status === 'published') arts = arts.filter(a => a.published);
+  if (status === 'draft') arts = arts.filter(a => !a.published);
+
+  const tbody = document.getElementById('articleTable');
+  if (!arts.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><span class="icon">📭</span>Tidak ada artikel ditemukan</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = arts.map(a => `
+    <tr>
+      <td><strong>${a.title}</strong></td>
+      <td>${getMenuLabel(a.menuId)}</td>
+      <td><span class="badge badge-${a.type}">${a.type}</span></td>
+      <td><span class="badge ${a.published ? 'badge-published' : 'badge-draft'}">${a.published ? 'Published' : 'Draft'}</span></td>
+      <td>${a.createdAt || '-'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" onclick="openArticleModal('${a.id}')">✏️</button>
+        <button class="btn btn-${a.published ? 'success' : 'ghost'} btn-sm" onclick="togglePublish('${a.id}')">${a.published ? '✅' : '📝'}</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteArticle('${a.id}')">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterArticles() { renderArticleTable(); }
+
+function togglePublish(id) {
+  const a = DATA.articles.find(x => x.id === id);
+  if (a) { a.published = !a.published; saveData(); renderArticleTable(); showToast(a.published ? 'Artikel dipublish ✓' : 'Artikel dijadikan draft'); }
+}
+
+// =====================================================
+// ARTICLE MODAL
+// =====================================================
+function openArticleModal(editId = null) {
+  // Populate menu select
+  const allMenus = flatMenus(DATA.menus);
+  const sel = document.getElementById('artMenu');
+  sel.innerHTML = allMenus.map(m => `<option value="${m.id}">${m.label}</option>`).join('');
+
+  document.getElementById('previewPane').classList.remove('show');
+  document.getElementById('previewBtn').textContent = '👁 Preview';
+
+  if (editId) {
+    const a = DATA.articles.find(x => x.id === editId);
+    if (!a) return;
+    document.getElementById('artModalTitle').textContent = 'Edit Artikel';
+    document.getElementById('artId').value = editId;
+    document.getElementById('artTitle').value = a.title;
+    document.getElementById('artType').value = a.type;
+    document.getElementById('artMenu').value = a.menuId;
+    document.getElementById('artPublished').value = String(a.published);
+    document.getElementById('artContent').value = a.content;
+    document.getElementById('artTags').value = (a.tags || []).join(', ');
+  } else {
+    document.getElementById('artModalTitle').textContent = 'Tambah Artikel';
+    document.getElementById('artId').value = '';
+    document.getElementById('artTitle').value = '';
+    document.getElementById('artType').value = 'materi';
+    document.getElementById('artPublished').value = 'true';
+    document.getElementById('artContent').value = '<h2>Judul Materi</h2>\n<p>Tulis konten di sini...</p>';
+    document.getElementById('artTags').value = '';
+  }
+  document.getElementById('articleModal').classList.add('open');
+}
+
+function saveArticle() {
+  const id = document.getElementById('artId').value;
+  const title = document.getElementById('artTitle').value.trim();
+  const type = document.getElementById('artType').value;
+  const menuId = document.getElementById('artMenu').value;
+  const published = document.getElementById('artPublished').value === 'true';
+  const content = document.getElementById('artContent').value;
+  const tags = document.getElementById('artTags').value.split(',').map(t => t.trim()).filter(Boolean);
+
+  if (!title) { showToast('Judul artikel wajib diisi!', true); return; }
+  if (!menuId) { showToast('Pilih menu terlebih dahulu!', true); return; }
+
+  const today = new Date().toISOString().split('T')[0];
+
+  if (id) {
+    const a = DATA.articles.find(x => x.id === id);
+    if (a) { a.title = title; a.type = type; a.menuId = menuId; a.published = published; a.content = content; a.tags = tags; }
+  } else {
+    DATA.articles.push({ id: genId(), title, type, menuId, published, content, tags, createdAt: today });
+  }
+
+  saveData(); closeModal('articleModal'); renderArticleTable();
+  showToast('Artikel berhasil disimpan ✓');
+}
+
+function confirmDeleteArticle(id) {
+  const a = DATA.articles.find(x => x.id === id);
+  document.getElementById('confirmMsg').textContent = `Hapus artikel "${a?.title}"? Tindakan ini tidak bisa dibatalkan.`;
+  document.getElementById('confirmOkBtn').onclick = () => {
+    DATA.articles = DATA.articles.filter(x => x.id !== id);
+    saveData(); closeModal('confirmModal'); renderArticleTable();
+    showToast('Artikel dihapus');
+  };
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+// =====================================================
+// EDITOR HELPERS
+// =====================================================
+function insertHtml(html) {
+  const ta = document.getElementById('artContent');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  ta.value = ta.value.substring(0, start) + html + ta.value.substring(end);
+  ta.selectionStart = ta.selectionEnd = start + html.length;
+  ta.focus(); updatePreview();
+}
+
+function wrapSel(open, close) {
+  const ta = document.getElementById('artContent');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const sel = ta.value.substring(start, end) || 'teks';
+  const wrapped = open + sel + close;
+  ta.value = ta.value.substring(0, start) + wrapped + ta.value.substring(end);
+  ta.focus(); updatePreview();
+}
+
+let previewOpen = false;
+function togglePreview() {
+  previewOpen = !previewOpen;
+  document.getElementById('previewPane').classList.toggle('show', previewOpen);
+  document.getElementById('previewBtn').textContent = previewOpen ? '✏️ Edit' : '👁 Preview';
+  if (previewOpen) updatePreview();
+}
+
+function updatePreview() {
+  if (!previewOpen) return;
+  document.getElementById('previewPane').innerHTML = document.getElementById('artContent').value;
+}
+
+// =====================================================
+// SETTINGS
+// =====================================================
+function loadSettings() {
+  const c = DATA.siteConfig;
+  document.getElementById('cfg-title').value = c.title || '';
+  document.getElementById('cfg-tagline').value = c.tagline || '';
+  document.getElementById('cfg-emoji').value = c.logoEmoji || '';
+  document.getElementById('cfg-heroText').value = c.heroText || '';
+  document.getElementById('cfg-heroSub').value = c.heroSubText || '';
+  document.getElementById('cfg-color').value = c.accentColor || '#6C63FF';
+  document.getElementById('cfg-colorText').value = c.accentColor || '#6C63FF';
+  document.getElementById('cfg-footer').value = c.footerText || '';
+
+  document.getElementById('cfg-color').addEventListener('input', function() {
+    document.getElementById('cfg-colorText').value = this.value;
+  });
+  document.getElementById('cfg-colorText').addEventListener('input', function() {
+    document.getElementById('cfg-color').value = this.value;
+  });
+}
+
+function saveSettings() {
+  DATA.siteConfig = {
+    ...DATA.siteConfig,
+    title: document.getElementById('cfg-title').value,
+    tagline: document.getElementById('cfg-tagline').value,
+    logoEmoji: document.getElementById('cfg-emoji').value,
+    heroText: document.getElementById('cfg-heroText').value,
+    heroSubText: document.getElementById('cfg-heroSub').value,
+    accentColor: document.getElementById('cfg-colorText').value,
+    footerText: document.getElementById('cfg-footer').value,
+  };
+  saveData(); showToast('Pengaturan disimpan ✓');
+}
+
+// =====================================================
+// BACKUP / RESTORE
+// =====================================================
+function exportData() {
+  const json = JSON.stringify(DATA, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `belajar-yoek-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  showToast('Backup didownload ✓');
+}
+
+function importData() {
+  const file = document.getElementById('importFile').files[0];
+  if (!file) { showToast('Pilih file JSON terlebih dahulu!', true); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.menus || !imported.articles) throw new Error();
+      DATA = imported; saveData();
+      showToast('Data berhasil diimport ✓');
+      renderDashboard();
+    } catch(err) {
+      showToast('File tidak valid!', true);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function confirmReset() {
+  document.getElementById('confirmMsg').textContent = 'Reset semua data ke default? Semua perubahan akan hilang!';
+  document.getElementById('confirmOkBtn').onclick = () => {
+    DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    saveData(); closeModal('confirmModal');
+    showToast('Data direset ke default');
+    renderDashboard();
+  };
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+// =====================================================
+// MODAL HELPERS
+// =====================================================
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// =====================================================
+// TOAST
+// =====================================================
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = (isError ? '⚠️ ' : '✅ ') + msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// =====================================================
+// INIT
+// =====================================================
+loadData();
+renderDashboard();
+</script>
+</body>
+</html>
